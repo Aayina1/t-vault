@@ -32,14 +32,15 @@
             $scope.domainName = AppConstant.DOMAIN_NAME;
 
             $scope.instanceMessage = '';
-            $http.get('/app/Messages/uimessages.properties').then(function (response) {
-                if (response != undefined && response.data !='') {
-                    $scope.instanceMessage = response.data.home_message;
-                }
-            }, function(error) {
-                console.log(error);
-                $scope.instanceMessage = '';
-            });
+            getDashboardMessage();
+            // $http.get('/app/Messages/uimessages.properties').then(function (response) {
+            //     if (response != undefined && response.data !='') {
+            //         $scope.instanceMessage = response.data.home_message;
+            //    }
+            // }, function(error) {
+            //     console.log(error);
+            //     $scope.instanceMessage = '';
+            // });
 
             $scope.userID = 'Username';
             Idle.unwatch();
@@ -146,6 +147,22 @@
                 getUserName();
                 //$state.go('safes', {'fromLogin':true});
             }
+        }
+        var getDashboardMessage = function () {
+            Authentication.getDashboardMessage().then(function (response) {
+                if (UtilityService.ifAPIRequestSuccessful(response)) {
+                    $scope.instanceMessage = response.data.data.message1;
+                }
+                else {
+                    // callback process failed. Redirect to landing page. If not active token exists then will automatically redirect from landing page to login.
+                    $scope.isLoadingData = false;
+                    // window.location.replace("/");
+                    return;
+                }
+            }, function (error) {
+                console.log(error);
+                // window.location.replace("/");
+            })
         }
 
 

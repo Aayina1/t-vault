@@ -153,9 +153,9 @@ public final class ControllerUtil {
 		approleAllowedCharacters = this.approleWhitelistedCharacters;
 		sdbNameAllowedCharacters = this.sdbNameWhitelistedCharacters;
 		sscredFileLocation = this.sscredLocation;
-		readSSCredFile(sscredFileLocation, true);
-		readOIDCCredFile(sscredFileLocation, true);
-		readIAMPortalCredFile(sscredFileLocation, true);
+		readSSCredFile(sscredFileLocation, false);
+		readOIDCCredFile(sscredFileLocation, false);
+		readIAMPortalCredFile(sscredFileLocation, false);
 	}
 
 	@Autowired(required = true)
@@ -551,6 +551,7 @@ public final class ControllerUtil {
 					build()));
 		}
 		return reqProcessor.process("/auth/ldap/users/configure",ldapUserConfigJson,token);
+		
 	}
 
 	public static Response configureUserpassUser(String userName,String policies,String token ){
@@ -1421,6 +1422,18 @@ public final class ControllerUtil {
 		return true;
 	}
 	
+	//new change 
+
+public static boolean isFolderExist(String path_n,String token){
+	Response response = reqProcessor.process("/read","{\"path\":\""+path_n+"\"}",token);
+			if(HttpStatus.OK.equals(response.getHttpstatus())){
+				return true;
+			}
+	return false;
+}
+	
+	
+	
 	public static boolean isValidSafePath(String path){
 		String paths[] =  path.split("/");
 		if(paths.length==2){
@@ -1521,6 +1534,7 @@ public final class ControllerUtil {
 		boolean valid = Pattern.matches(sdbNameAllowedCharacters, sdbName);
 		return valid;
 	}
+	
 	
 	/**
 	 * Validates inputs values required for SDB creation
@@ -3128,4 +3142,14 @@ public final class ControllerUtil {
 		}
 		return access;
 	}
+	//new change
+	public static boolean isFolderExisting(String path,String token){
+		Response response = reqProcessor.process("/read","{\"path\":\""+path+"\"}",token);
+				if(HttpStatus.OK.equals(response.getHttpstatus())){
+					return true;
+				}
+		return false;
+	}
+
+	
 }
