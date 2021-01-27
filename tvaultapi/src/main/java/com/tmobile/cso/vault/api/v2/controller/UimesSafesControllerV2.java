@@ -34,7 +34,7 @@ public class UimesSafesControllerV2 {
 	@PostMapping(value = { "v2/safes/message" }, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<String> write(HttpServletRequest request, @RequestHeader(value = "vault-token") String token,
 			@RequestBody Message message) {
-		
+
 		return uimesSafesService.write(token, message);
 
 	}
@@ -42,9 +42,7 @@ public class UimesSafesControllerV2 {
 	@ApiOperation(value = "${UimesSafesControllerV2.readFromVault.value}", notes = "${UimesSafesControllerV2.readFromVault.notes}")
 	@GetMapping(value = "v2/safes/message", produces = "application/json")
 	public ResponseEntity<String> readFromVault() {
-		
+
 		return uimesSafesService.readFromVault();
 	}
 }
-
-//new change

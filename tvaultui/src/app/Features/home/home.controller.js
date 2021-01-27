@@ -33,14 +33,6 @@
 
             $scope.instanceMessage = '';
             getDashboardMessage();
-            // $http.get('/app/Messages/uimessages.properties').then(function (response) {
-            //     if (response != undefined && response.data !='') {
-            //         $scope.instanceMessage = response.data.home_message;
-            //    }
-            // }, function(error) {
-            //     console.log(error);
-            //     $scope.instanceMessage = '';
-            // });
 
             $scope.userID = 'Username';
             Idle.unwatch();
