@@ -32,8 +32,11 @@
             $scope.domainName = AppConstant.DOMAIN_NAME;
 
             $scope.instanceMessage = '';
-            getDashboardMessage();
+           getDashboardMessage(); 
+            
+              
 
+            
             $scope.userID = 'Username';
             Idle.unwatch();
             if ($scope.authType.toLowerCase() === 'ldap') {
@@ -143,17 +146,13 @@
         var getDashboardMessage = function () {
             Authentication.getDashboardMessage().then(function (response) {
                 if (UtilityService.ifAPIRequestSuccessful(response)) {
-                    $scope.instanceMessage = response.data.data.message1;
-                }
-                else {
-                    // callback process failed. Redirect to landing page. If not active token exists then will automatically redirect from landing page to login.
-                    $scope.isLoadingData = false;
-                    // window.location.replace("/");
-                    return;
+                    if (response && response.data && response.data.data && !!response.data.data.message1) {
+                        $scope.instanceMessage = response.data.data.message1;
+                    }
                 }
             }, function (error) {
-                console.log(error);
-                // window.location.replace("/");
+                console.log(error); 
+                $scope.instanceMessage = '';
             })
         }
 

@@ -20,7 +20,6 @@ import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
 import com.tmobile.cso.vault.api.exception.LogMessage;
 import com.tmobile.cso.vault.api.model.Message;
-import com.tmobile.cso.vault.api.model.UserDetails;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
 import com.tmobile.cso.vault.api.utils.CommonUtils;
@@ -45,7 +44,14 @@ public class UimesSafesService {
 	private String vaultAuthMethod;
 
 	private static Logger log = LogManager.getLogger(UimesSafesService.class);
-
+	
+	
+	/**
+	 * Save messages
+	 * @param token
+	 * @param message
+	 * @return
+	 */
 	public ResponseEntity<String> write(String token, Message message) {
 		if (!isAuthorizedToGetSecretCount(token)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
@@ -74,26 +80,19 @@ public class UimesSafesService {
 				.put(LogMessage.ACTION, "Write message")
 				.put(LogMessage.MESSAGE, String.format("Trying to write message [%s]", path))
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).build()));
-		System.out.println(path);
-
-		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-				.put(LogMessage.ACTION, "Get Folders")
-				.put(LogMessage.MESSAGE, String.format("Trying to get folders for [%s]", path))
-				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).build()));
 
 		if (ControllerUtil.isFolderExisting(path, token)) {
 			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-					.put(LogMessage.ACTION, "folder not exist")
-					.put(LogMessage.MESSAGE, String.format("Trying to get folders failed [%s]", path))
+					.put(LogMessage.ACTION, "folder doesnot exist")
+					.put(LogMessage.MESSAGE, String.format("Failed to retrieve folder [%s]", path))
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 					.build()));
 
 			Response response = reqProcessor.process("/write", writeJson, token);
 			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-					.put(LogMessage.ACTION, "Get Folders").put(LogMessage.MESSAGE, "Getting folders completed")
+					.put(LogMessage.ACTION, "Save message").put(LogMessage.MESSAGE, "saved messages to folder")
 					.put(LogMessage.STATUS, response.getHttpstatus().toString())
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 					.build()));
@@ -110,25 +109,30 @@ public class UimesSafesService {
 			if (response.getHttpstatus().equals(HttpStatus.NO_CONTENT)) {
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-						.put(LogMessage.ACTION, "Create Folder").put(LogMessage.MESSAGE, "Create Folder completed")
+						.put(LogMessage.ACTION, "Failed folder creation").put(LogMessage.MESSAGE, "Unable to create folder")
 						.put(LogMessage.STATUS, response.getHttpstatus().toString())
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 						.build()));
 				Response response1 = reqProcessor.process("/write", writeJson, token);
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-						.put(LogMessage.ACTION, "Get Folders").put(LogMessage.MESSAGE, "write to folders completed")
+						.put(LogMessage.ACTION, "Save message").put(LogMessage.MESSAGE, "saved messages to folder")
 						.put(LogMessage.STATUS, response1.getHttpstatus().toString())
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 						.build()));
 				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
-			}
+		}
 
 			return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 		}
 	}
+	
+	/**
+	 * Get messages
+	 * @return
+	 */
 
-	public ResponseEntity<String> readFromVault() {
+	public ResponseEntity<String> readMessage() {
 		String token = tokenUtils.getSelfServiceToken();
 
 		String path = TVaultConstants.UIMES_SAFES_METADATA;
@@ -148,6 +152,11 @@ public class UimesSafesService {
 
 	}
 
+	/**
+	 * check for authentication of Intial Root token
+	 * @param token
+	 * @return
+	 */
 	private boolean isAuthorizedToGetSecretCount(String token) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		List<String> currentPolicies;

@@ -20,7 +20,7 @@ public class Message implements Serializable {
 
 	public Message(HashMap<String, String> details) {
 		super();
-		this.details = details;
+		this.details = details;       
 	}
 
 	  @ApiModelProperty(example="{\r\n" +

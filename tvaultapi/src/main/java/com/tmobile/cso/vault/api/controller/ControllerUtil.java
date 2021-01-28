@@ -146,19 +146,17 @@ public final class ControllerUtil {
 	private static OIDCUtil oidcUtil;
 	private static final String ERROR_STRING = "{\"errors\":[\"Unexpected error :\"";
 
-	@PostConstruct
-	private void initStatic() {
+	@PostConstruct  
+	private void initStatic () {
 		vaultAuthMethod = this.tvaultAuthMethod;
 		secretKeyAllowedCharacters = this.secretKeyWhitelistedCharacters;
 		approleAllowedCharacters = this.approleWhitelistedCharacters;
 		sdbNameAllowedCharacters = this.sdbNameWhitelistedCharacters;
 		sscredFileLocation = this.sscredLocation;
-		readSSCredFile(sscredFileLocation, true);
+		readSSCredFile(sscredFileLocation,true);
 		readOIDCCredFile(sscredFileLocation, true);
 		readIAMPortalCredFile(sscredFileLocation, true);
-
 	}
-
 	@Autowired(required = true)
 	public void setreqProcessor(RequestProcessor reqProcessor) {
 		ControllerUtil.reqProcessor = reqProcessor;

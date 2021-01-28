@@ -22,7 +22,7 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @CrossOrigin
 @Api(description = "Manage Ui message", position = 25)
-public class UimesSafesControllerV2 {
+public class UimesSafesController {
 
 	@Value("${vault.auth.method}")
 	private String vaultAuthMethod;
@@ -41,8 +41,8 @@ public class UimesSafesControllerV2 {
 
 	@ApiOperation(value = "${UimesSafesControllerV2.readFromVault.value}", notes = "${UimesSafesControllerV2.readFromVault.notes}")
 	@GetMapping(value = "v2/safes/message", produces = "application/json")
-	public ResponseEntity<String> readFromVault() {
+	public ResponseEntity<String> readMessage() {
 
-		return uimesSafesService.readFromVault();
+		return uimesSafesService.readMessage();
 	}
 }
