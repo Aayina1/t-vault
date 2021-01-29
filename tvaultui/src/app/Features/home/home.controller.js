@@ -32,15 +32,8 @@
             $scope.domainName = AppConstant.DOMAIN_NAME;
 
             $scope.instanceMessage = '';
-            $http.get('/app/Messages/uimessages.properties').then(function (response) {
-                if (response != undefined && response.data !='') {
-                    $scope.instanceMessage = response.data.home_message;
-                }
-            }, function(error) {
-                console.log(error);
-                $scope.instanceMessage = '';
-            });
-
+             getDashboardMessage(); 
+            
             $scope.userID = 'Username';
             Idle.unwatch();
             if ($scope.authType.toLowerCase() === 'ldap') {
@@ -147,7 +140,18 @@
                 //$state.go('safes', {'fromLogin':true});
             }
         }
-
+        var getDashboardMessage = function () {
+            Authentication.getDashboardMessage().then(function (response) {
+                if (UtilityService.ifAPIRequestSuccessful(response)) {
+                    if (response && response.data && response.data.data && !!response.data.data.message1) {
+                        $scope.instanceMessage = response.data.data.message1;
+                    }
+                }
+            }, function (error) {
+                console.log(error); 
+                $scope.instanceMessage = '';
+            })
+        }
 
         var getUserName = function(){
             Authentication.getUserName().then(function(response){

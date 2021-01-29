@@ -133,10 +133,24 @@
             return error;
         });
       },
+      getDashboardMessage: function () {
+        var url = RestEndpoints.baseURL + '/v2/safes/message';
+        return $http({
+          method: 'GET',
+          url: url
+        }).then(function (response) {
+            return response;
+        }).catch(function(error) {
+            console.log(error);
+            return error;
+        });
+      },         
 
       logout: logout
 
     };
+
+    
 
     function logout(withoutRevoke) {
       var url = '/#!/';

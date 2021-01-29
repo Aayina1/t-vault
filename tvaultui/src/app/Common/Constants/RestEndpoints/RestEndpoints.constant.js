@@ -598,6 +598,10 @@ readTextFile("../apiUrls.json");
             name: 'searchByUPNInGsmAndCorp',
             url: '/v2/tmo/users?UserPrincipalName=',
             method: 'GET'
+        },{
+            name: 'dashboardMessage',
+            url : '/v2/safes/message', 
+            method: 'GET'
         }
     ]
     });
