@@ -3085,7 +3085,7 @@ public final class ControllerUtil {
 				if (currentPolicies.contains(TVaultConstants.ROOT_POLICY)) {
 					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-							.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
+							.put(LogMessage.ACTION, "isAuthorizedToken")
 							.put(LogMessage.MESSAGE, "The Token has required policies to get total secret count.")
 							.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
 							.build()));
@@ -3094,14 +3094,14 @@ public final class ControllerUtil {
 			} catch (IOException e) {
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-						.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
+						.put(LogMessage.ACTION, "isAuthorizedToken")
 						.put(LogMessage.MESSAGE, "Failed to parse policies from token")
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 			}
 		}
 		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-				.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
+				.put(LogMessage.ACTION, "isAuthorizedToken")
 				.put(LogMessage.MESSAGE, "The Token does not have required policies to get total secret count.")
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 		return false;
