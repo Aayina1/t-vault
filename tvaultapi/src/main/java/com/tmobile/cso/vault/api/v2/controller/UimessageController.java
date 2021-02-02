@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tmobile.cso.vault.api.model.Message;
-import com.tmobile.cso.vault.api.service.UimesSafesService;
+import com.tmobile.cso.vault.api.service.UimessageService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,24 +21,21 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @CrossOrigin
 @Api(description = "Manage Ui message", position = 25)
-public class UimesSafesController {
-
-	@Value("${vault.auth.method}")
-	private String vaultAuthMethod;
+public class UimessageController {
 
 	@Autowired
-	private UimesSafesService uimesSafesService;
+	private UimessageService uimesSafesService;
 
-	@ApiOperation(value = "${UimesSafesController.write.value}", notes = "${UimesSafesController.write.notes}")
+	@ApiOperation(value = "${UimesSafesController.writeMessage.value}", notes = "${UimesSafesController.writeMessage.notes}")
 	@PostMapping(value = { "v2/safes/message" }, consumes = "application/json", produces = "application/json")
-	public ResponseEntity<String> write(HttpServletRequest request, @RequestHeader(value = "vault-token") String token,
-			@RequestBody Message message) {
+	public ResponseEntity<String> writeMessage(HttpServletRequest request,
+			@RequestHeader(value = "vault-token") String token, @RequestBody Message message) {
 
-		return uimesSafesService.write(token, message);
+		return uimesSafesService.writeMessage(token, message);
 
 	}
 
-	@ApiOperation(value = "${UimesSafesController.readFromVault.value}", notes = "${UimesSafesController.readFromVault.notes}")
+	@ApiOperation(value = "${UimesSafesController.readMessage.value}", notes = "${UimesSafesController.readMessage.notes}")
 	@GetMapping(value = "v2/safes/message", produces = "application/json")
 	public ResponseEntity<String> readMessage() {
 		return uimesSafesService.readMessage();

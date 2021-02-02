@@ -54,6 +54,7 @@ import com.tmobile.cso.vault.api.exception.LogMessage;
 import com.tmobile.cso.vault.api.exception.TVaultValidationException;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
+import com.tmobile.cso.vault.api.utils.CommonUtils;
 import com.tmobile.cso.vault.api.utils.JSONUtil;
 import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
 @Component
@@ -144,6 +145,7 @@ public final class ControllerUtil {
 	private static IAMPortalCred iamPortalCred = null;
 	
 	private static OIDCUtil oidcUtil;
+	private static CommonUtils commonUtils;
 	private static final String ERROR_STRING= "{\"errors\":[\"Unexpected error :\"";
 
 	@PostConstruct
@@ -162,6 +164,14 @@ public final class ControllerUtil {
 	public void setreqProcessor(RequestProcessor reqProcessor) {
 		ControllerUtil.reqProcessor = reqProcessor;
 	}
+	
+   @Autowired(required = true)
+   public void setcommonutils(CommonUtils commonUtils)
+   {
+	   ControllerUtil.commonUtils = commonUtils;
+	   
+   }
+   
 
 	/**
 	 * Method to get requestProcessor
@@ -3043,11 +3053,57 @@ public final class ControllerUtil {
 		return access;
 	}
 	
+	/**
+	 * check whether folder is exist or not
+	 * @param token
+	 * @param path
+	 * @return
+	 */
+	
 	public static boolean isFolderExisting(String path, String token) {
 		Response response = reqProcessor.process("/read", "{\"path\":\"" + path + "\"}", token);
 		if (HttpStatus.OK.equals(response.getHttpstatus())) {
 			return true;
 		}
+		return false;
+	}
+	
+	/**
+	 * check for authentication of Intial Root token
+	 * @param token
+	 * @return
+	 */
+	
+	public static boolean isAuthorizedToken(String token) {
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<String> currentPolicies;
+		Response response = reqProcessor.process("/auth/tvault/lookup", "{}", token);
+		if (HttpStatus.OK.equals(response.getHttpstatus())) {
+			String responseJson = response.getResponse();
+			try {
+				currentPolicies = Arrays.asList(commonUtils.getPoliciesAsArray(objectMapper, responseJson));
+				if (currentPolicies.contains(TVaultConstants.ROOT_POLICY)) {
+					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+							.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
+							.put(LogMessage.MESSAGE, "The Token has required policies to get total secret count.")
+							.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
+							.build()));
+					return true;
+				}
+			} catch (IOException e) {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+						.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
+						.put(LogMessage.MESSAGE, "Failed to parse policies from token")
+						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
+			}
+		}
+		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
+				.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
+				.put(LogMessage.MESSAGE, "The Token does not have required policies to get total secret count.")
+				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
 		return false;
 	}
 

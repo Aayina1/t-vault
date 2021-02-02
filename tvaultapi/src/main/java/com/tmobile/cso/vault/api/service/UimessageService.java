@@ -1,14 +1,10 @@
 package com.tmobile.cso.vault.api.service;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -28,10 +24,7 @@ import com.tmobile.cso.vault.api.utils.ThreadLocalContext;
 import com.tmobile.cso.vault.api.utils.TokenUtils;
 
 @Component
-public class UimesSafesService {
-
-	@Value("${vault.port}")
-	private String vaultPort;
+public class UimessageService {
 
 	@Autowired
 	private RequestProcessor reqProcessor;
@@ -40,20 +33,16 @@ public class UimesSafesService {
 	@Autowired
 	private CommonUtils commonUtils;
 
-	@Value("${vault.auth.method}")
-	private String vaultAuthMethod;
+	private static Logger log = LogManager.getLogger(UimessageService.class);
 
-	private static Logger log = LogManager.getLogger(UimesSafesService.class);
-	
-	
 	/**
 	 * Save messages
 	 * @param token
 	 * @param message
 	 * @return
 	 */
-	public ResponseEntity<String> write(String token, Message message) {
-		if (!isAuthorizedToGetSecretCount(token)) {
+	public ResponseEntity<String> writeMessage(String token, Message message) {
+		if (!ControllerUtil.isAuthorizedToken(token)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, "getSecretCount")
@@ -84,8 +73,8 @@ public class UimesSafesService {
 		if (ControllerUtil.isFolderExisting(path, token)) {
 			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-					.put(LogMessage.ACTION, "folder doesnot exist")
-					.put(LogMessage.MESSAGE, String.format("Failed to retrieve folder [%s]", path))
+					.put(LogMessage.ACTION, "isFolderExisting")
+					.put(LogMessage.MESSAGE, String.format("Folder is existing [%s]", path))
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 					.build()));
 
@@ -99,36 +88,46 @@ public class UimesSafesService {
 
 			return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
 		} else {
-			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-					.put(LogMessage.ACTION, "CreateFolder")
-					.put(LogMessage.MESSAGE, String.format("Trying to Create folder [%s]", path))
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
-					.build()));
-			Response response = reqProcessor.process("/sdb/createfolder", writeJson, token);
-			if (response.getHttpstatus().equals(HttpStatus.NO_CONTENT)) {
+			Response response1 = reqProcessor.process("/sdb/createfolder", writeJson, token);
+			if (response1.getHttpstatus().equals(HttpStatus.NO_CONTENT)) {
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-						.put(LogMessage.ACTION, "Failed folder creation").put(LogMessage.MESSAGE, "Unable to create folder")
-						.put(LogMessage.STATUS, response.getHttpstatus().toString())
-						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
-						.build()));
-				Response response1 = reqProcessor.process("/write", writeJson, token);
-				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-						.put(LogMessage.ACTION, "Save message").put(LogMessage.MESSAGE, "saved messages to folder")
+						.put(LogMessage.ACTION, "Create Folder")
+						.put(LogMessage.MESSAGE, "Trying to Create folder [%s] completed succssfully")
 						.put(LogMessage.STATUS, response1.getHttpstatus().toString())
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 						.build()));
+
+				Response response = reqProcessor.process("/write", writeJson, token);
+
+				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
+						.put(LogMessage.ACTION, "Save message")
+						.put(LogMessage.MESSAGE, "saved messages to folder sucessfully")
+						.put(LogMessage.STATUS, response != null ? response.getHttpstatus().toString() : "")
+						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
+						.build()));
+
 				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
+			} else {
+				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
+						.put(LogMessage.ACTION, "Write Message")
+						.put(LogMessage.MESSAGE, String.format("Writing message [%s] failed", path))
+						.put(LogMessage.RESPONSE, "Invalid path")
+						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
+						.build()));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid path\"]}");
+
+			}
+
 		}
 
-			return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
-		}
 	}
-	
+
 	/**
-	 * Get messages
+	 * Get message
+	 * 
 	 * @return
 	 */
 
@@ -148,44 +147,6 @@ public class UimesSafesService {
 				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).build()));
 		return ResponseEntity.status(response.getHttpstatus()).body(response.getResponse());
 
-	}
-
-	/**
-	 * check for authentication of Intial Root token
-	 * @param token
-	 * @return
-	 */
-	private boolean isAuthorizedToGetSecretCount(String token) {
-		ObjectMapper objectMapper = new ObjectMapper();
-		List<String> currentPolicies;
-		Response response = reqProcessor.process("/auth/tvault/lookup", "{}", token);
-		if (HttpStatus.OK.equals(response.getHttpstatus())) {
-			String responseJson = response.getResponse();
-			try {
-				currentPolicies = Arrays.asList(commonUtils.getPoliciesAsArray(objectMapper, responseJson));
-				if (currentPolicies.contains(TVaultConstants.ROOT_POLICY)) {
-					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-							.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
-							.put(LogMessage.MESSAGE, "The Token has required policies to get total secret count.")
-							.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
-							.build()));
-					return true;
-				}
-			} catch (IOException e) {
-				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-						.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
-						.put(LogMessage.MESSAGE, "Failed to parse policies from token")
-						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			}
-		}
-		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-				.put(LogMessage.ACTION, "isAuthorizedToGetSecretCount")
-				.put(LogMessage.MESSAGE, "The Token does not have required policies to get total secret count.")
-				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		return false;
 	}
 
 }
