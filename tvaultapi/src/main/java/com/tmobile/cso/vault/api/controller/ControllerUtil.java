@@ -165,14 +165,7 @@ public final class ControllerUtil {
 		ControllerUtil.reqProcessor = reqProcessor;
 	}
 	
-   @Autowired(required = true)
-   public void setcommonutils(CommonUtils commonUtils)
-   {
-	   ControllerUtil.commonUtils = commonUtils;
-	   
-   }
    
-
 	/**
 	 * Method to get requestProcessor
 	 * @return
@@ -3050,7 +3043,7 @@ public final class ControllerUtil {
 				access.put(TVaultConstants.SVC_ACC_PATH_PREFIX, updatedPermissionList);
 			}
 		}
-		return access;
+		return access;  
 	}
 	
 	/**
@@ -3068,44 +3061,5 @@ public final class ControllerUtil {
 		return false;
 	}
 	
-	/**
-	 * check for authentication of Intial Root token
-	 * @param token
-	 * @return
-	 */
-	
-	public static boolean isAuthorizedToken(String token) {
-		ObjectMapper objectMapper = new ObjectMapper();
-		List<String> currentPolicies;
-		Response response = reqProcessor.process("/auth/tvault/lookup", "{}", token);
-		if (HttpStatus.OK.equals(response.getHttpstatus())) {
-			String responseJson = response.getResponse();
-			try {
-				currentPolicies = Arrays.asList(commonUtils.getPoliciesAsArray(objectMapper, responseJson));
-				if (currentPolicies.contains(TVaultConstants.ROOT_POLICY)) {
-					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-							.put(LogMessage.ACTION, "isAuthorizedToken")
-							.put(LogMessage.MESSAGE, "The Token has required policies to get total secret count.")
-							.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL))
-							.build()));
-					return true;
-				}
-			} catch (IOException e) {
-				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-						.put(LogMessage.ACTION, "isAuthorizedToken")
-						.put(LogMessage.MESSAGE, "Failed to parse policies from token")
-						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-			}
-		}
-		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
-				.put(LogMessage.ACTION, "isAuthorizedToken")
-				.put(LogMessage.MESSAGE, "The Token does not have required policies to get total secret count.")
-				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL)).build()));
-		return false;
-	}
-
 }
 

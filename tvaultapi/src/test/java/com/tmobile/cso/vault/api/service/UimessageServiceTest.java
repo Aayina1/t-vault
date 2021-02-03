@@ -50,7 +50,7 @@ public class UimessageServiceTest {
 	RequestProcessor reqProcessor;
 	@Mock
 	CommonUtils commonUtils;
-	@Mock
+	@Mock 
 	TokenUtils tokenUtils;
 
 	@Before
@@ -92,10 +92,8 @@ public class UimessageServiceTest {
 
 		Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 		Response response = getMockResponse(HttpStatus.OK, true, "{\"messages\":[\"message saved to vault\"]}");
-		// Response response = getMockResponse(HttpStatus.NO_CONTENT, true, "");
-		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK)
-				.body("{\"messages\":[\"message saved to vault\"]}");
-		when(ControllerUtil.isAuthorizedToken(token)).thenReturn(true);
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
+		when(commonUtils.isAuthorizedToken(token)).thenReturn(true);
 		when(JSONUtil.getJSON(message)).thenReturn(writeJson);
 		when(reqProcessor.process("/auth/tvault/lookup", "{}", token)).thenReturn(authresponse);
 		String[] policies = { "root" };
@@ -112,7 +110,7 @@ public class UimessageServiceTest {
 		when(reqProcessor.process("/read", "{\"path\":\"metadata/" + path + "\"}", token)).thenReturn(readResponse);
 
 		when(reqProcessor.process(Mockito.eq("/write"), Mockito.anyString(), Mockito.eq(token))).thenReturn(response);
-		when(reqProcessor.process("/sdb/createfolder", writeJson, token)).thenReturn(responseNoContent);
+		when(reqProcessor.process(Mockito.eq("/sdb/createfolder"), Mockito.anyString(), Mockito.eq(token))).thenReturn(responseNoContent);
 
 		ResponseEntity<String> responseEntity = uimessageService.writeMessage(token, message);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());

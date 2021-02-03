@@ -42,7 +42,7 @@ public class UimessageService {
 	 * @return
 	 */
 	public ResponseEntity<String> writeMessage(String token, Message message) {
-		if (!ControllerUtil.isAuthorizedToken(token)) {
+		if (!commonUtils.isAuthorizedToken(token)) {
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 					.put(LogMessage.ACTION, "getSecretCount")
@@ -121,7 +121,7 @@ public class UimessageService {
 
 			}
 
-		}
+		} 
 
 	}
 
