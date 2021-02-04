@@ -37,6 +37,7 @@ public class UimessageService {
 
 	/**
 	 * Save messages
+	 * 
 	 * @param token
 	 * @param message
 	 * @return
@@ -64,65 +65,81 @@ public class UimessageService {
 		String path = TVaultConstants.UIMES_SAFES_METADATA;
 		String writeJson = "{\"path\":\"" + path + "\",\"data\":" + metadataJson + "}";
 
-		log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-				.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-				.put(LogMessage.ACTION, "Write message")
-				.put(LogMessage.MESSAGE, String.format("Trying to write message [%s]", path))
-				.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString()).build()));
-
-		if (ControllerUtil.isFolderExisting(path, token)) {
-			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+		if (isdataNullorEmpty(metadataMap)) {
+			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-					.put(LogMessage.ACTION, "isFolderExisting")
-					.put(LogMessage.MESSAGE, String.format("Folder is existing [%s]", path))
+					.put(LogMessage.ACTION, "Write Message")
+					.put(LogMessage.MESSAGE, String.format("Writing message [%s] failed", path))
+					.put(LogMessage.RESPONSE, "Invalid data")
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 					.build()));
-
-			Response response = reqProcessor.process("/write", writeJson, token);
-			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-					.put(LogMessage.ACTION, "Save message").put(LogMessage.MESSAGE, "saved messages to folder")
-					.put(LogMessage.STATUS, response.getHttpstatus().toString())
-					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
-					.build()));
-
-			return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid data\"]}");
 		} else {
-			Response response1 = reqProcessor.process("/sdb/createfolder", writeJson, token);
-			if (response1.getHttpstatus().equals(HttpStatus.NO_CONTENT)) {
+			log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
+					.put(LogMessage.ACTION, "Write message")
+					.put(LogMessage.MESSAGE, String.format("Trying to write message [%s]", path))
+					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
+					.build()));
+
+			if (ControllerUtil.isFolderExisting(path, token)) {
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-						.put(LogMessage.ACTION, "Create Folder")
-						.put(LogMessage.MESSAGE, "Trying to Create folder [%s] completed succssfully")
-						.put(LogMessage.STATUS, response1.getHttpstatus().toString())
+						.put(LogMessage.ACTION, "isFolderExisting")
+						.put(LogMessage.MESSAGE, String.format("Folder is existing [%s]", path))
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 						.build()));
 
 				Response response = reqProcessor.process("/write", writeJson, token);
-
 				log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-						.put(LogMessage.ACTION, "Save message")
-						.put(LogMessage.MESSAGE, "saved messages to folder sucessfully")
-						.put(LogMessage.STATUS, response != null ? response.getHttpstatus().toString() : "")
+						.put(LogMessage.ACTION, "Save message").put(LogMessage.MESSAGE, "saved messages to folder")
+						.put(LogMessage.STATUS, response.getHttpstatus().toString())
 						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 						.build()));
 
 				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
 			} else {
-				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
-						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-						.put(LogMessage.ACTION, "Write Message")
-						.put(LogMessage.MESSAGE, String.format("Writing message [%s] failed", path))
-						.put(LogMessage.RESPONSE, "Invalid path")
-						.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
-						.build()));
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid path\"]}");
+				Response response1 = reqProcessor.process("/sdb/createfolder", writeJson, token);
+				if (response1.getHttpstatus().equals(HttpStatus.NO_CONTENT)) {
+					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
+							.put(LogMessage.ACTION, "Create Folder")
+							.put(LogMessage.MESSAGE, "Trying to Create folder [%s] completed succssfully")
+							.put(LogMessage.STATUS, response1.getHttpstatus().toString()).put(LogMessage.APIURL,
+									ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
+							.build()));
 
+					Response response = reqProcessor.process("/write", writeJson, token);
+
+					log.debug(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
+							.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
+							.put(LogMessage.ACTION, "Save message")
+							.put(LogMessage.MESSAGE, "saved messages to folder sucessfully")
+							.put(LogMessage.STATUS, response != null ? response.getHttpstatus().toString() : "")
+							.put(LogMessage.APIURL,
+									ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
+							.build()));
+				}
+
+				return ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
 			}
 
-		} 
+		}
+	}
+	
+	/**
+	 * check for null value 
+	 * 
+	 * @return
+	 */
+	
+	public boolean isdataNullorEmpty(HashMap<String, String> metadataMap) {
+		if (metadataMap.containsValue(null) || metadataMap.isEmpty()) {
+			return true;
+		}
 
+		return false;
 	}
 
 	/**

@@ -146,10 +146,6 @@
                     if(response && response.data && response.data.data && !!response.data.data.message1){
                         $scope.instanceMessage = response.data.data.message1;
                     }
-                     else if(response.data.data.message1 ==null || response.data.data.message1 === "")
-                     {
-                          console.error("message should not be empty or null");
-                     }
                 }
             }, function (error) {
                 console.log(error); 

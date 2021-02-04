@@ -43,7 +43,7 @@ import com.tmobile.cso.vault.api.utils.TokenUtils;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @PrepareForTest({ ControllerUtil.class, JSONUtil.class })
 @PowerMockIgnore({ "javax.management.*" })
-public class UimessageServiceTest {
+public class UimessageServiceTest { 
 	@InjectMocks
 	UimessageService uimessageService;
 	@Mock
@@ -82,39 +82,87 @@ public class UimessageServiceTest {
 		String token = "s.2oefXc9A7iPbP9rGfGtKLUMf";
 		String path = "metadata/message";
 		String writeJson = "{\"path\":\"metadata/message\",\"data\":{\"message1\":\"value1\",\"message2\":\"value2\"}}";
-		String responsejson = "{\"id\":\"s.2oefXc9A7iPbP9rGfGtKLUMf\",\"policies\":[\"root\"]}";
-		Response authresponse = getMockResponse(HttpStatus.OK, true, responsejson);
-
-		HashMap<String, String> data = new HashMap<>();
+		HashMap<String, String> data = new HashMap<>(); 
 		data.put("message1", "value1");
-		data.put("message2", "value2");
+		data.put("message2", "value2"); 
 		Message message = new Message(data);
-
-		Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true, "");
 		Response response = getMockResponse(HttpStatus.OK, true, "{\"messages\":[\"message saved to vault\"]}");
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
 		when(commonUtils.isAuthorizedToken(token)).thenReturn(true);
 		when(JSONUtil.getJSON(message)).thenReturn(writeJson);
-		when(reqProcessor.process("/auth/tvault/lookup", "{}", token)).thenReturn(authresponse);
-		String[] policies = { "root" };
-		try {
-			when(commonUtils.getPoliciesAsArray(Mockito.any(), Mockito.any())).thenReturn(policies);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		
 		when(ControllerUtil.isFolderExisting(path, token)).thenReturn(true);
+		
 
-		Response readResponse = getMockResponse(HttpStatus.OK, true,
-				"{\"data\":{\"message1\":\"value1\",\"message2\":\"value2\"}}");
+		Response readResponse = getMockResponse(HttpStatus.OK, true,"{\"data\":{\"message1\":\"value1\",\"message2\":\"value2\"}}");
 		when(reqProcessor.process("/read", "{\"path\":\"metadata/" + path + "\"}", token)).thenReturn(readResponse);
 
 		when(reqProcessor.process(Mockito.eq("/write"), Mockito.anyString(), Mockito.eq(token))).thenReturn(response);
-		when(reqProcessor.process(Mockito.eq("/sdb/createfolder"), Mockito.anyString(), Mockito.eq(token))).thenReturn(responseNoContent);
-
 		ResponseEntity<String> responseEntity = uimessageService.writeMessage(token, message);
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
+	}
+	
+	@Test
+	public void test_isFolderExistingInvalid()
+	{  
+		String token = "s.2oefXc9A7iPbP9rGfGtKLUMf";
+		String writeJson = "{\"path\":\"metadata/message\",\"data\":{\"message1\":\"value1\",\"message2\":\"value2\"}}";
+		String path ="metadata/folder";
+		
+		HashMap<String, String> data = new HashMap<>(); 
+		data.put("message1", "value1");
+		data.put("message2", "value2");
+		Message message = new Message(data); 
+		
+		when(commonUtils.isAuthorizedToken(token)).thenReturn(true);
+		 Response responseNoContent = getMockResponse(HttpStatus.NO_CONTENT, true,""); 
+		 Response response = getMockResponse(HttpStatus.OK, true,"{\"messages\":[\"message saved to vault\"]}");
+		 ResponseEntity<String>
+		 responseEntityExpected = ResponseEntity.status(HttpStatus.OK).body("{\"messages\":[\"message saved to vault\"]}");
+		 
+	    when(JSONUtil.getJSON(message)).thenReturn(writeJson);
+	   
+	    when(ControllerUtil.isFolderExisting(path, token)).thenReturn(false);
+		when(reqProcessor.process(Mockito.eq("/sdb/createfolder"), Mockito.anyString(), Mockito.eq(token))).thenReturn(responseNoContent);
+		
+		when(reqProcessor.process(Mockito.eq("/write"), Mockito.anyString(), Mockito.eq(token))).thenReturn(response);
+	    ResponseEntity<String> responseEntity = uimessageService.writeMessage(token, message);
+	    assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(responseEntityExpected, responseEntity);  
+	}
+	
+	@Test
+	public void isAuthorizedTokenFailed()
+	{
+		String token = "2oefXc9A7iPbP9rGfGtKLUMf";
+		String writeJson = "{\"path\":\"metadata/message\",\"data\":{\"message1\":\"value1\",\"message2\":\"value2\"}}";
+		HashMap<String, String> data = new HashMap<>(); 
+		data.put("message1", "value1");
+		data.put("message2", "value2");
+		Message message = new Message(data);
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.FORBIDDEN).body("{\"errors\":[\"Access Denied: No enough permission to access this API\"]}");
+		when(JSONUtil.getJSON(message)).thenReturn(writeJson);
+		when(commonUtils.isAuthorizedToken(token)).thenReturn(false);
+		ResponseEntity<String> responseEntity = uimessageService.writeMessage(token, message);
+		 assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+	     assertEquals(responseEntityExpected, responseEntity);  
+		
+	}
+
+	@Test
+	public void test_isdataNullorEmptyFailed() {
+		String token = "s.2oefXc9A7iPbP9rGfGtKLUMf";	
+		HashMap<String, String> data = new HashMap<>(); 
+		data.put("message1", null);
+		data.put("message2", "value2");
+		Message message = new Message(data);
+		when(commonUtils.isAuthorizedToken(token)).thenReturn(true);	
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid data\"]}");
+		ResponseEntity<String> responseEntity = uimessageService.writeMessage(token, message);
+		 assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+	     assertEquals(responseEntityExpected, responseEntity);  
+	
 	}
 
 	@Test
@@ -132,5 +180,5 @@ public class UimessageServiceTest {
 		assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
 	}
-
+	
 }

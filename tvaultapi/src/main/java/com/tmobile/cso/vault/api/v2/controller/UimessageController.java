@@ -24,20 +24,20 @@ import io.swagger.annotations.ApiOperation;
 public class UimessageController {
 
 	@Autowired
-	private UimessageService uimesSafesService;
+	private UimessageService uimessageService;
 
-	@ApiOperation(value = "${UimesSafesController.writeMessage.value}", notes = "${UimesSafesController.writeMessage.notes}")
+	@ApiOperation(value = "${UimessageController.writeMessage.value}", notes = "${UimessageController.writeMessage.notes}")
 	@PostMapping(value = { "v2/safes/message" }, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<String> writeMessage(HttpServletRequest request,
 			@RequestHeader(value = "vault-token") String token, @RequestBody Message message) {
 
-		return uimesSafesService.writeMessage(token, message);
+		return uimessageService.writeMessage(token, message); 
 
 	}
 
-	@ApiOperation(value = "${UimesSafesController.readMessage.value}", notes = "${UimesSafesController.readMessage.notes}")
+	@ApiOperation(value = "${UimessageController.readMessage.value}", notes = "${UimessageController.readMessage.notes}")
 	@GetMapping(value = "v2/safes/message", produces = "application/json")
 	public ResponseEntity<String> readMessage() {
-		return uimesSafesService.readMessage();
+		return uimessageService.readMessage();
 	}
 }

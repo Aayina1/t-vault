@@ -37,7 +37,7 @@ public class UimessageControllerTest {
 	@Mock
 	private UimessageService uimessageService;
 	@InjectMocks
-	private UimessageController uimessageController;
+	private UimessageController uimessageController; 
 
 	@Before
 	public void setUp() {
