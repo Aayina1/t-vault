@@ -31,13 +31,12 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;  
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.tmobile.cso.vault.api.common.TVaultConstants;
 import com.tmobile.cso.vault.api.exception.LogMessage;
 import com.tmobile.cso.vault.api.process.RequestProcessor;
 import com.tmobile.cso.vault.api.process.Response;
-import com.tmobile.cso.vault.api.service.SecretService;
 @Component
 public class CommonUtils {
 	@Autowired
@@ -66,7 +65,7 @@ public class CommonUtils {
 		       }
 		}
 		else {
-			policies.add(policiesNode.asText());  
+			policies.add(policiesNode.asText());
 		}
 
 		// get identity policies
@@ -108,7 +107,7 @@ public class CommonUtils {
 							.build()));
 					return true;
 				} 
-			} catch (IOException e) {  
+			} catch (IOException e) { 
 				log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 						.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER))
 						.put(LogMessage.ACTION, "isAuthorizedToken")

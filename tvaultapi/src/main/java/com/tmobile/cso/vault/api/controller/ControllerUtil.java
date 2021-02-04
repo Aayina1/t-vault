@@ -560,7 +560,7 @@ public final class ControllerUtil {
 		try {
 			userpassUserConfigJson = objMapper.writeValueAsString(configureUserMap);
 		} catch (JsonProcessingException e) {
-			log.error(e); 
+			log.error(e);
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder().
 					put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString()).
 					put(LogMessage.ACTION, "configureUserpassUser").
@@ -3059,9 +3059,6 @@ public final class ControllerUtil {
 			return true;
 		}
 		return false;
-	}
-	
-	
-	
+	}	
 }
 
