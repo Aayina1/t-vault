@@ -1183,4 +1183,15 @@ public class ControllerUtilTest {
         Boolean isUpdated = ControllerUtil.updateMetaDataOnPath(path, params, token);
         assertEquals(Boolean.FALSE, isUpdated);
     }
+    
+    @Test
+    public void test_isFolderExisting()  {
+    	String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+    	String path ="metdata/message";
+    	Response readResponse = getMockResponse(HttpStatus.OK, true,"{\"data\":{\"message1\":\"value1\",\"message2\":\"value2\"}");
+    	when(reqProcessor.process("/read", "{\"path\":\"" + path + "\"}", token)).thenReturn(readResponse);
+        boolean valid = ControllerUtil.isFolderExisting(path, token);
+        assertEquals(Boolean.TRUE, valid);
+    }
+
 }

@@ -7,10 +7,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class Message implements Serializable {
-	private static final long serialVersionUID = 5801186298788991628L;
+public class Message implements Serializable { 
+	private static final long serialVersionUID = 758402888538763021L;
 	
-	@JsonProperty("data") private HashMap<String, String> details;
+	@JsonProperty("data") /**
+	 * 
+	 */
+	
+	private HashMap<String, String> details;
 
 	
 	public Message() {
