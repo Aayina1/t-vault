@@ -19,7 +19,7 @@ import io.swagger.annotations.ApiOperation;
 
 @RestController
 @CrossOrigin
-@Api(description = "Manage Ui message", position = 25)
+@Api(description = "Manage UI Message", position = 20)
 public class UimessageController {
 
 	@Autowired

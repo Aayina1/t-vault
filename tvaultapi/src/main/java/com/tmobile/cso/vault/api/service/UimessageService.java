@@ -77,6 +77,7 @@ public class UimessageService {
 			JsonNode dataNode = objMapper.readTree(writeJson).get("data");
 
 			if (dataNode.toString() == "null") {
+
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 						.body("{\"errors\":[\"Invalid request.Check json data\"]}");
 			}
@@ -84,7 +85,7 @@ public class UimessageService {
 			log.error(e);
 			log.error(JSONUtil.getJSON(ImmutableMap.<String, String>builder()
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
-					.put(LogMessage.ACTION, "dataNode")
+					.put(LogMessage.ACTION, "JsonNode")
 					.put(LogMessage.MESSAGE, String.format("dataNode failed  [%s]", e.getMessage()))
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 					.build()));
@@ -95,10 +96,10 @@ public class UimessageService {
 					.put(LogMessage.USER, ThreadLocalContext.getCurrentMap().get(LogMessage.USER).toString())
 					.put(LogMessage.ACTION, "isdataNullorEmpty")
 					.put(LogMessage.MESSAGE, String.format("This field is required cannot be null value.", path))
-					.put(LogMessage.RESPONSE, "Invalid data")
+					.put(LogMessage.RESPONSE, "Invalid input values")
 					.put(LogMessage.APIURL, ThreadLocalContext.getCurrentMap().get(LogMessage.APIURL).toString())
 					.build()));
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid data\"]}");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"errors\":[\"Invalid input values\"]}");
 		}
 
 		if (ControllerUtil.isFolderExisting(path, token)) {

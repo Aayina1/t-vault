@@ -3,18 +3,15 @@ package com.tmobile.cso.vault.api.service;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
-import org.codehaus.groovy.syntax.TokenUtil;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.mockito.BDDMockito.Then;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,7 +24,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.tmobile.cso.vault.api.controller.ControllerUtil;
@@ -170,11 +166,52 @@ public class UimessageServiceTest {
 		Message message = new Message(data);
 		when(commonUtils.isAuthorizedToken(token)).thenReturn(true);
 		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body("{\"errors\":[\"Invalid data\"]}");
+				.body("{\"errors\":[\"Invalid input values\"]}");
 		ResponseEntity<String> responseEntity = uimessageService.writeMessage(token, message);
 		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
 		assertEquals(responseEntityExpected, responseEntity);
 
+	}
+
+	@Test
+	public void test_datacheck() {
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		HashMap<String, String> data = null;
+		Message message = new Message(data);
+		when(commonUtils.isAuthorizedToken(token)).thenReturn(true);
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body("{\"errors\":[\"Invalid request.Check json data\"]}");
+		ResponseEntity<String> responseEntity = uimessageService.writeMessage(token, message);
+		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntity);
+	}
+
+	@Test
+	public void test_CreateFolderFailed() {
+
+		String token = "5PDrOhsy4ig8L3EpsJZSLAMg";
+		String writeJson = "{\"path\":\"metadata/message\",\"data1\":{\"message1\":\"value1\",\"message2\":\"value2\"}}";
+		String path = "metadata/folder";
+
+		HashMap<String, String> data = new HashMap<>();
+		data.put("message1", "value1");
+		data.put("message2", "value2");
+		Message message = new Message(data);
+
+		when(commonUtils.isAuthorizedToken(token)).thenReturn(true);
+		Response responseNoContent = getMockResponse(HttpStatus.BAD_REQUEST, false, "");
+		ResponseEntity<String> responseEntityExpected = ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body("{\"errors\":[\"Invalid path\"]}");
+		when(JSONUtil.getJSON(message)).thenReturn(writeJson);
+
+		when(ControllerUtil.isFolderExisting(path, token)).thenReturn(false);
+
+		when(reqProcessor.process(Mockito.eq("/sdb/createfolder"), Mockito.anyString(), Mockito.eq(token)))
+				.thenReturn(responseNoContent);
+
+		ResponseEntity<String> responseEntity = uimessageService.writeMessage(token, message);
+		assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+		assertEquals(responseEntityExpected, responseEntity);
 	}
 
 	@Test
