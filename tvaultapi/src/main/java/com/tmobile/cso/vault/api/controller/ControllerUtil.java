@@ -155,9 +155,9 @@ public final class ControllerUtil {
 		approleAllowedCharacters = this.approleWhitelistedCharacters;
 		sdbNameAllowedCharacters = this.sdbNameWhitelistedCharacters;
 		sscredFileLocation = this.sscredLocation;
-		readSSCredFile(sscredFileLocation, true);
-		readOIDCCredFile(sscredFileLocation, true);
-		readIAMPortalCredFile(sscredFileLocation, true);
+		readSSCredFile(sscredFileLocation, false);
+		readOIDCCredFile(sscredFileLocation, false);
+		readIAMPortalCredFile(sscredFileLocation, false);
 	}
 
 	@Autowired(required = true)
@@ -3341,4 +3341,19 @@ public final class ControllerUtil {
 		}
 		return access;
 	}
+	
+	/**
+	 * check whether folder is exist or not
+	 * @param token
+	 * @param path
+	 * @return
+	 */
+	
+	public static boolean isFolderExisting(String path, String token) {
+		Response response = reqProcessor.process("/read", "{\"path\":\"" + path + "\"}", token);
+		if (HttpStatus.OK.equals(response.getHttpstatus())) {
+			return true;
+		}
+		return false;
+	}	
 }
